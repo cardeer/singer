@@ -1,32 +1,17 @@
-import { FFmpeg } from '@ffmpeg/ffmpeg';
-import { fetchFile, toBlobURL } from '@ffmpeg/util';
+import { fetchFile } from '@ffmpeg/util';
 import { useRef, useState } from 'react';
+import { useKaraoke } from './hooks/useKaraoke';
 
 const App = () => {
-  const [link, setLink] = useState<string>(
-    'https://www.youtube.com/watch?v=DHea-Qcy9g0',
-  );
+  const { ffmpeg, isReady } = useKaraoke();
+
+  const [link, setLink] = useState<string>('');
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleGetKaraoke = async () => {
-    const ffmpeg = new FFmpeg();
-    const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(
-        `${baseURL}/ffmpeg-core.wasm`,
-        'application/wasm',
-      ),
-    });
-
-    ffmpeg.on('log', ({ message }) => {
-      console.log(message);
-    });
-
     const file = await fetchFile(
-      `http://localhost:3001/audio?path=${encodeURI(link)}`,
+      `http://localhost:3001/audio?link=${encodeURI(link)}`,
     );
 
     await ffmpeg.writeFile('audio.mp3', file);
@@ -51,19 +36,23 @@ const App = () => {
   };
 
   return (
-    <div className="content">
-      <input
-        className="border border-black p-[8px]"
-        value={link}
-        onChange={(e) => setLink(e.target.value)}
-      />
+    <>
+      {isReady && (
+        <div className="content">
+          <input
+            className="border border-black p-[8px]"
+            value={link}
+            onChange={(e) => setLink(e.target.value)}
+          />
 
-      <audio ref={audioRef} />
+          <audio ref={audioRef} />
 
-      <button className="block" onClick={handleGetKaraoke}>
-        submit
-      </button>
-    </div>
+          <button className="block" onClick={handleGetKaraoke}>
+            submit
+          </button>
+        </div>
+      )}
+    </>
   );
 };
 

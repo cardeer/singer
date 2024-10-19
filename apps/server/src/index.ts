@@ -1,9 +1,8 @@
+import ytdl from "@distube/ytdl-core";
 import cors from "cors";
 import express from "express";
 import fs from "fs";
 import path from "path";
-import ytdl from "ytdl-core";
-import { Downloader } from "ytdl-mp3";
 
 const app = express();
 
@@ -14,7 +13,7 @@ app.use(cors());
 app.use(express.static("../public"));
 
 app.get("/audio", async (req, res) => {
-  const link = req.query.path as string;
+  const link = req.query.link as string;
 
   const info = await ytdl.getInfo(link);
 
@@ -23,23 +22,34 @@ app.get("/audio", async (req, res) => {
   const id = info.videoDetails.videoId;
 
   const outDir = path.resolve(process.cwd(), "sounds");
-  const dir = path.resolve(outDir, id);
 
-  if (fs.existsSync(dir)) {
-    const files = fs.readdirSync(dir);
-    res.status(200).sendFile(path.resolve(dir, files[0]));
+  if (!fs.existsSync(outDir)) {
+    fs.mkdirSync(outDir);
+  }
+
+  const file = path.resolve(outDir, `${id}.mp3`);
+
+  if (fs.existsSync(file)) {
+    console.log(`Found ${id} from storage`);
+    res.status(200).sendFile(file);
     return;
   }
 
-  fs.mkdirSync(dir);
-
-  const downloader = new Downloader({
-    outputDir: dir,
-    getTags: true,
+  res.on("finish", () => {
+    fs.rmSync(file);
   });
 
-  const file = await downloader.downloadSong(link);
-  res.status(200).sendFile(file);
+  ytdl(link, {
+    filter: "audioonly",
+    quality: "highestaudio",
+  })
+    .pipe(fs.createWriteStream(file))
+    .on("finish", () => {
+      res.status(200).sendFile(file);
+    })
+    .on("error", () => {
+      res.status(500);
+    });
 });
 
 app.listen(3001, () => {

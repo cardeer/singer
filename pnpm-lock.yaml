@@ -48,9 +48,6 @@ importers:
       typescript:
         specifier: ^5.4.5
         version: 5.6.2
-      ytdl-core:
-        specifier: ^4.11.5
-        version: 4.11.5
 
   apps/web:
     dependencies:
@@ -1955,10 +1952,6 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  ytdl-core@4.11.5:
-    resolution: {integrity: sha512-27LwsW4n4nyNviRCO1hmr8Wr5J1wLLMawHCQvH8Fk0hiRqrxuIu028WzbJetiYH28K8XDbeinYW4/wcHQD1EXA==}
-    engines: {node: '>=12'}
 
   ytdl-mp3@5.0.0:
     resolution: {integrity: sha512-+54AdpCQm/3sJPAo+chK94I056vmYuhBNS97RRUIKcI5tK1QRoQeMf/VbT166B1jf8slIHCDPNwc/5cTHJNLvA==}
@@ -4060,12 +4053,6 @@ snapshots:
   yn@3.1.1: {}
 
   yocto-queue@0.1.0: {}
-
-  ytdl-core@4.11.5:
-    dependencies:
-      m3u8stream: 0.8.6
-      miniget: 4.2.3
-      sax: 1.4.1
 
   ytdl-mp3@5.0.0:
     dependencies:

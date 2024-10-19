@@ -15,8 +15,7 @@
     "express": "^4.21.1",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
-    "ytdl-core": "^4.11.5"
+    "typescript": "^5.4.5"
   },
   "dependencies": {
     "@distube/ytdl-core": "^4.14.4",
