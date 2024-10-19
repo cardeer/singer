@@ -2,7 +2,7 @@ import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { toBlobURL } from '@ffmpeg/util';
 import { useEffect, useRef, useState } from 'react';
 
-export function useKaraoke() {
+export function useFFmpeg() {
   const ffmpegRef = useRef<FFmpeg>(new FFmpeg());
 
   const [isReady, setIsReady] = useState<boolean>(false);

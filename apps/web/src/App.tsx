@@ -1,20 +1,28 @@
 import { fetchFile } from '@ffmpeg/util';
 import { useRef, useState } from 'react';
-import { useKaraoke } from './hooks/useKaraoke';
+import { useFFmpeg } from './hooks/useFFmpeg';
 
 const App = () => {
-  const { ffmpeg, isReady } = useKaraoke();
+  const { ffmpeg, isReady } = useFFmpeg();
 
   const [link, setLink] = useState<string>('');
 
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleGetKaraoke = async () => {
+    try {
+      await ffmpeg.deleteFile('audio.mp3');
+      await ffmpeg.deleteFile('karaoke.mp3');
+    } catch (error) {
+      console.error(error);
+    }
+
     const file = await fetchFile(
       `http://localhost:3001/audio?link=${encodeURI(link)}`,
     );
 
     await ffmpeg.writeFile('audio.mp3', file);
+
     await ffmpeg.exec([
       '-i',
       'audio.mp3',
@@ -31,14 +39,14 @@ const App = () => {
       new Blob([data.buffer], { type: 'audio/mp3' }),
     );
 
-    audioRef.current!.volume = 0.1;
+    audioRef.current!.volume = 0.5;
     audioRef.current!.play();
   };
 
   return (
-    <>
+    <div className="w-screen h-screen flex flex-col items-center justify-center">
       {isReady && (
-        <div className="content">
+        <>
           <input
             className="border border-black p-[8px]"
             value={link}
@@ -50,9 +58,9 @@ const App = () => {
           <button className="block" onClick={handleGetKaraoke}>
             submit
           </button>
-        </div>
+        </>
       )}
-    </>
+    </div>
   );
 };
 
