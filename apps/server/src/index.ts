@@ -1,4 +1,5 @@
 import ytdl from "@distube/ytdl-core";
+import childProcess from "child_process";
 import cors from "cors";
 import express from "express";
 import fs from "fs";
@@ -14,6 +15,7 @@ app.use(express.static("../public"));
 
 app.get("/audio", async (req, res) => {
   let link = req.query.link as string;
+  let type = req.query.type as "full" | "instrumental";
 
   if (req.query.id) {
     link = `https://www.youtube.com/watch?v=${req.query.id}`;
@@ -25,18 +27,54 @@ app.get("/audio", async (req, res) => {
 
   const id = info.videoDetails.videoId;
 
-  const outDir = path.resolve(process.cwd(), "sounds");
+  const outDir = path.resolve(process.cwd(), "sounds", id);
 
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir);
   }
 
-  const file = path.resolve(outDir, `${id}.mp3`);
+  const file = path.resolve(outDir, `audio.mp3`);
+  const karaokeDir = path.resolve(outDir, "karaoke");
 
-  if (fs.existsSync(file)) {
+  if (!fs.existsSync(karaokeDir)) {
+    fs.mkdirSync(karaokeDir);
+  }
+
+  if (fs.existsSync(file) && type === "full") {
     console.log(`Found ${id} from storage`);
     res.status(200).sendFile(file);
     return;
+  } else if (type === "instrumental") {
+    const files = fs.readdirSync(karaokeDir);
+    if (files.length > 0) {
+      const instrumentalFile = files.find((file) => file.includes("Instrumental"));
+      if (instrumentalFile) {
+        console.log("Found karaoke audio from storage", instrumentalFile);
+        res.status(200).sendFile(path.resolve(karaokeDir, instrumentalFile));
+        return;
+      } else {
+        res.sendStatus(404);
+        return;
+      }
+    } else {
+      if (fs.existsSync(file)) {
+        console.log("creating karaoke file");
+        childProcess.execSync(
+          `audio-separator ${file} --output_format mp3 --output_dir ${karaokeDir} --model_filename UVR-MDX-NET-Inst_HQ_3.onnx --single_stem=Instrumental`
+        );
+        const files = fs.readdirSync(karaokeDir);
+        if (files.length > 0) {
+          const instrumentalFile = files.find((file) => file.includes("Instrumental"));
+          if (instrumentalFile) {
+            res.status(200).sendFile(path.resolve(karaokeDir, instrumentalFile));
+            return;
+          } else {
+            res.sendStatus(404);
+            return;
+          }
+        }
+      }
+    }
   }
 
   ytdl(link, {
@@ -45,7 +83,23 @@ app.get("/audio", async (req, res) => {
   })
     .pipe(fs.createWriteStream(file))
     .on("finish", () => {
-      res.status(200).sendFile(file);
+      if (type === "full") {
+        res.status(200).sendFile(file);
+      } else {
+        console.log("creating karaoke file");
+        childProcess.execSync(
+          `audio-separator ${file} --output_format mp3 --output_dir ${karaokeDir} --model_filename UVR-MDX-NET-Inst_HQ_3.onnx --single_stem=Instrumental`
+        );
+        const files = fs.readdirSync(karaokeDir);
+        if (files.length > 0) {
+          const instrumentalFile = files.find((file) => file.includes("Instrumental"));
+          if (instrumentalFile) {
+            res.status(200).sendFile(path.resolve(karaokeDir, instrumentalFile));
+          } else {
+            res.sendStatus(404);
+          }
+        }
+      }
     })
     .on("error", () => {
       res.sendStatus(500);

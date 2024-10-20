@@ -1,7 +1,6 @@
 import { useFFmpeg } from '@/hooks/useFFmpeg';
 import { http } from '@/http';
 import { useKaraokeStore } from '@/stores/karaokeStore';
-import { fetchFile } from '@ffmpeg/util';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,35 +19,56 @@ const KaraokePage: FC = () => {
   const objectUrl = useRef<string>();
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const getKaraokeAudio = async () => {
-    try {
-      await ffmpeg.deleteFile('audio.mp3');
-      await ffmpeg.deleteFile('karaoke.mp3');
-    } catch (error: unknown) {
-      console.log('No previous karaoke file');
-    }
+  // const getKaraokeAudio = async () => {
+  //   try {
+  //     await ffmpeg.deleteFile('audio.mp3');
+  //     await ffmpeg.deleteFile('karaoke.mp3');
+  //   } catch (error: unknown) {
+  //     console.log('No previous karaoke file');
+  //   }
 
-    const file = await fetchFile(
-      `http://localhost:3001/audio?id=${songDetails!.id})}`,
-    );
+  //   const file = await fetchFile(
+  //     `http://localhost:3001/audio?id=${songDetails!.id})}`,
+  //   );
 
-    await ffmpeg.writeFile('audio.mp3', file);
+  //   await ffmpeg.writeFile('audio.mp3', file);
 
-    await ffmpeg.exec([
-      '-i',
-      'audio.mp3',
-      '-af',
-      'pan=stereo|c0=c0|c1=-1*c1',
-      '-ac',
-      '1',
-      'karaoke.mp3',
-    ]);
+  //   await ffmpeg.exec([
+  //     '-i',
+  //     'audio.mp3',
+  //     '-af',
+  //     'pan=stereo|c0=c0|c1=-1*c1',
+  //     '-ac',
+  //     '1',
+  //     'karaoke.mp3',
+  //   ]);
 
-    const data = (await ffmpeg.readFile('karaoke.mp3')) as Buffer;
+  //   const data = (await ffmpeg.readFile('karaoke.mp3')) as Buffer;
+
+  //   objectUrl.current = URL.createObjectURL(
+  //     new Blob([data.buffer], { type: 'audio/mp3' }),
+  //   );
+
+  //   audioRef.current!.src = objectUrl.current!;
+  //   audioRef.current!.volume = 0.5;
+  //   audioRef.current!.play();
+  //   audioRef.current!.addEventListener('timeupdate', handleAudioTimeUpdate);
+  // };
+
+  const fetchKaraokeAudio = async () => {
+    const response = await http.get('/audio', {
+      params: {
+        id: songDetails!.id,
+        type: 'instrumental',
+      },
+      responseType: 'arraybuffer',
+    });
 
     objectUrl.current = URL.createObjectURL(
-      new Blob([data.buffer], { type: 'audio/mp3' }),
+      new Blob([response.data], { type: 'audio/mp3' }),
     );
+
+    console.log(response.data);
 
     audioRef.current!.src = objectUrl.current!;
     audioRef.current!.volume = 0.5;
@@ -75,7 +95,7 @@ const KaraokePage: FC = () => {
     if (!songDetails) {
       navigate('/');
     } else {
-      fetchLyrics().then(() => getKaraokeAudio());
+      fetchLyrics().then(() => fetchKaraokeAudio());
     }
 
     return () => {
