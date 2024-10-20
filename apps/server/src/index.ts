@@ -13,7 +13,11 @@ app.use(cors());
 app.use(express.static("../public"));
 
 app.get("/audio", async (req, res) => {
-  const link = req.query.link as string;
+  let link = req.query.link as string;
+
+  if (req.query.id) {
+    link = `https://www.youtube.com/watch?v=${req.query.id}`;
+  }
 
   const info = await ytdl.getInfo(link);
 
@@ -44,7 +48,7 @@ app.get("/audio", async (req, res) => {
       res.status(200).sendFile(file);
     })
     .on("error", () => {
-      res.status(500);
+      res.sendStatus(500);
     });
 });
 
@@ -72,8 +76,8 @@ app.get("/lyrics/:id", async (req, res) => {
 
   const lyricsFile = path.resolve(lyricsDir, `${id}.json`);
 
-  if (!lyricsFile) {
-    res.status(404);
+  if (!fs.existsSync(lyricsFile)) {
+    res.sendStatus(404);
     return;
   }
 
@@ -87,14 +91,18 @@ app.post("/lyrics", async (req, res) => {
 
   const lyricsDir = path.resolve(process.cwd(), "lyrics");
 
-  if (!lyricsDir) {
+  if (!fs.existsSync(lyricsDir)) {
     fs.mkdirSync(lyricsDir);
   }
 
   const lyricsFile = path.resolve(lyricsDir, `${id}.json`);
 
+  if (fs.existsSync(lyricsFile)) {
+    fs.rmSync(lyricsFile);
+  }
+
   fs.writeFileSync(lyricsFile, JSON.stringify(content, null, 2), "utf-8");
-  res.status(201);
+  res.sendStatus(201);
 });
 
 app.listen(3001, () => {

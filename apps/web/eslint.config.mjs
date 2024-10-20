@@ -26,6 +26,7 @@ export default [
     rules: {
       ...reactHooks.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': 'off',
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
   { ignores: ['dist/'] },
