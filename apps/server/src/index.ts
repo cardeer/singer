@@ -35,10 +35,6 @@ app.get("/audio", async (req, res) => {
     return;
   }
 
-  res.on("finish", () => {
-    fs.rmSync(file);
-  });
-
   ytdl(link, {
     filter: "audioonly",
     quality: "highestaudio",
@@ -50,6 +46,55 @@ app.get("/audio", async (req, res) => {
     .on("error", () => {
       res.status(500);
     });
+});
+
+app.get("/details", async (req, res) => {
+  const link = req.query.link as string;
+  const info = await ytdl.getInfo(link);
+  const videoDetails = info.videoDetails;
+
+  res.status(200).json({
+    id: videoDetails.videoId,
+    title: videoDetails.title,
+    author: videoDetails.author,
+    thumbnails: videoDetails.thumbnails,
+  });
+});
+
+app.get("/lyrics/:id", async (req, res) => {
+  const id = req.params.id;
+
+  const lyricsDir = path.resolve(process.cwd(), "lyrics");
+
+  if (!lyricsDir) {
+    fs.mkdirSync(lyricsDir);
+  }
+
+  const lyricsFile = path.resolve(lyricsDir, `${id}.json`);
+
+  if (!lyricsFile) {
+    res.status(404);
+    return;
+  }
+
+  const content = fs.readFileSync(lyricsFile, "utf-8");
+  res.status(200).json(JSON.parse(content));
+});
+
+app.post("/lyrics", async (req, res) => {
+  const id = req.body.id;
+  const content = req.body.content;
+
+  const lyricsDir = path.resolve(process.cwd(), "lyrics");
+
+  if (!lyricsDir) {
+    fs.mkdirSync(lyricsDir);
+  }
+
+  const lyricsFile = path.resolve(lyricsDir, `${id}.json`);
+
+  fs.writeFileSync(lyricsFile, JSON.stringify(content, null, 2), "utf-8");
+  res.status(201);
 });
 
 app.listen(3001, () => {

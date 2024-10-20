@@ -1,6 +1,10 @@
 import { fetchFile } from '@ffmpeg/util';
-import { useRef, useState } from 'react';
+import { lazy, useRef, useState } from 'react';
+import { Route, Routes } from 'react-router-dom';
+import LazyPage from './components/LazyPage';
 import { useFFmpeg } from './hooks/useFFmpeg';
+
+const SelectPage = lazy(() => import('@/modules/select/SelectPage'));
 
 const App = () => {
   const { ffmpeg, isReady } = useFFmpeg();
@@ -13,8 +17,8 @@ const App = () => {
     try {
       await ffmpeg.deleteFile('audio.mp3');
       await ffmpeg.deleteFile('karaoke.mp3');
-    } catch (error) {
-      console.error(error);
+    } catch (error: unknown) {
+      console.log('No previous karaoke file');
     }
 
     const file = await fetchFile(
@@ -44,23 +48,9 @@ const App = () => {
   };
 
   return (
-    <div className="w-screen h-screen flex flex-col items-center justify-center">
-      {isReady && (
-        <>
-          <input
-            className="border border-black p-[8px]"
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-          />
-
-          <audio ref={audioRef} />
-
-          <button className="block" onClick={handleGetKaraoke}>
-            submit
-          </button>
-        </>
-      )}
-    </div>
+    <Routes>
+      <Route index element={<LazyPage component={SelectPage} />} />
+    </Routes>
   );
 };
 

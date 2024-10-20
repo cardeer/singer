@@ -27,6 +27,12 @@ export function useFFmpeg() {
 
   useEffect(() => {
     loadFFmpeg();
+
+    const ffmpeg = ffmpegRef.current;
+
+    return () => {
+      ffmpeg?.terminate();
+    };
   }, []);
 
   return {
