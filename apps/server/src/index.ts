@@ -27,6 +27,12 @@ app.get("/audio", async (req, res) => {
 
   const id = info.videoDetails.videoId;
 
+  const soundsDir = path.resolve(process.cwd(), "sounds");
+
+  if (!fs.existsSync(soundsDir)) {
+    fs.mkdirSync(soundsDir);
+  }
+
   const outDir = path.resolve(process.cwd(), "sounds", id);
 
   if (!fs.existsSync(outDir)) {
