@@ -11,6 +11,7 @@ const KaraokePage: FC = () => {
   const [lyrics, setLyrics] = useState<[number, string][]>([]);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [isReady, setIsReady] = useState<boolean>(false);
 
   const objectUrl = useRef<string>();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -44,6 +45,9 @@ const KaraokePage: FC = () => {
       }
 
       if (audioRef.current) {
+        audioRef.current!.pause();
+        audioRef.current!.currentTime = 0;
+
         audioRef.current.removeEventListener(
           'timeupdate',
           handleAudioTimeUpdate,
@@ -54,8 +58,8 @@ const KaraokePage: FC = () => {
 
   useEffect(() => {
     if (getLyricsQuery.isSuccess && getLyricsQuery.data) {
+      setLyrics(getLyricsQuery.data.lyrics);
       getInstrumentalAudio.refetch();
-      setLyrics(getLyricsQuery.data);
     } else if (getLyricsQuery.isError) {
       getInstrumentalAudio.refetch();
     }
@@ -71,6 +75,8 @@ const KaraokePage: FC = () => {
       audioRef.current!.volume = 0.5;
       audioRef.current!.play();
       audioRef.current!.addEventListener('timeupdate', handleAudioTimeUpdate);
+
+      setIsReady(true);
     }
   }, [getInstrumentalAudio.isSuccess, getInstrumentalAudio.data]);
 
@@ -88,31 +94,50 @@ const KaraokePage: FC = () => {
     <>
       <audio ref={audioRef} className="hidden" />
 
-      <div
-        className="h-screen w-screen text-white"
-        style={{
-          backgroundImage: `url(${songDetails!.thumbnails[songDetails!.thumbnails.length - 1].url})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
-        <div className="flex h-full w-full flex-col items-center justify-center gap-[16px] bg-black/80">
-          {lyrics.length > 0 ? (
-            <>
-              <div className="text-3xl">{lyrics[currentIndex][1]}</div>
+      {!isReady && (
+        <div className="fixed left-0 top-0 z-20 flex h-full w-full flex-col items-center justify-center bg-black/80 text-center text-white">
+          <div className="text-3xl">Loading ...</div>
+          <div className="mt-[16px] text-sm">
+            This may a take a few minutes for the first time.
+          </div>
+        </div>
+      )}
 
-              {currentIndex < lyrics.length - 1 && (
-                <div className="text-lg text-gray-400">
-                  {lyrics[currentIndex + 1][1]}
-                </div>
+      {songDetails && (
+        <div
+          className="h-screen w-screen text-white"
+          style={{
+            backgroundImage: `url(${songDetails!.thumbnails[songDetails!.thumbnails.length - 1].url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
+          {isReady && (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-[16px] bg-black/80">
+              {lyrics.length > 0 ? (
+                <>
+                  <div className="text-3xl">{lyrics[currentIndex][1]}</div>
+
+                  {currentIndex < lyrics.length - 1 && (
+                    <div className="text-lg text-gray-400">
+                      {lyrics[currentIndex + 1][1]}
+                    </div>
+                  )}
+
+                  {currentIndex < lyrics.length - 2 && (
+                    <div className="text-lg text-gray-400">
+                      {lyrics[currentIndex + 2][1]}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-3xl">No Lyrics Available</div>
               )}
-            </>
-          ) : (
-            <div className="text-3xl">No Lyrics Available</div>
+            </div>
           )}
         </div>
-      </div>
+      )}
     </>
   );
 };

@@ -1,3 +1,4 @@
+import { ILyrics } from "@/data/entities/ILyrics";
 import { LyricsRepository, LyricsRepositoryIdentifier } from "@/data/repositories/LyricsRepository";
 import { Inject, Service } from "typedi";
 import { LyricsNotFoundError } from "./errors/LyricsError";
@@ -16,5 +17,18 @@ export class LyricsService {
 
     result.lyrics = JSON.parse(result.lyrics);
     return result;
+  }
+
+  public async upsertLyrics(id: string, lyrics: [number, string][]) {
+    const now = new Date();
+
+    const entity: ILyrics = {
+      id,
+      lyrics: JSON.stringify(lyrics),
+      created_at: now,
+      updated_at: now,
+    };
+
+    await this._lyricsRepository.upsertLyrics(entity);
   }
 }
