@@ -1,7 +1,9 @@
 import { http } from '@/http';
+import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
 import { mdiMusicNote, mdiPause, mdiPlay } from '@mdi/js';
 import Icon from '@mdi/react';
+import { useMutation } from '@tanstack/react-query';
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLyricsStore } from './stores/lyricsStore';
@@ -19,8 +21,13 @@ const LyricsSyncPage: FC = () => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
 
   const audioRef = useRef<HTMLAudioElement>(null);
+  const lyricsRef = useRef<HTMLDivElement>(null);
   const objectUrlRef = useRef<string>();
   const syncDataRef = useRef<[number, string][]>();
+
+  const submitLyricsMutation = useMutation({
+    mutationFn: apiService.lyrics.updateLyrics.mutation,
+  });
 
   const lyricsArray = useMemo(() => {
     return (lyrics ?? '').split(/\r?\n/) ?? [];
@@ -30,6 +37,7 @@ const LyricsSyncPage: FC = () => {
     const response = await http.get('/audio', {
       params: {
         id: songDetails?.id,
+        type: 'full',
       },
       responseType: 'arraybuffer',
     });
@@ -61,11 +69,10 @@ const LyricsSyncPage: FC = () => {
   };
 
   const handleSubmitLyrics = async () => {
-    await http.post('/lyrics', {
-      id: songDetails!.id,
-      content: syncDataRef.current!,
-    });
-
+    await submitLyricsMutation.mutateAsync([
+      songDetails!.id,
+      syncDataRef.current!,
+    ]);
     navigate('/');
   };
 
@@ -88,17 +95,32 @@ const LyricsSyncPage: FC = () => {
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
       }
+
+      if (audioRef.current) {
+        audioRef.current!.pause();
+        audioRef.current.currentTime = 0;
+      }
     };
   }, []);
 
   useEffect(() => {
     const handleSpacePressed = (e: KeyboardEvent) => {
+      const children = lyricsRef.current!.children;
+
       if (e.code === 'Space') {
         if (finished || currentIndex === lyricsArray.length - 1 || !isPlaying) {
           return;
         }
 
         const nextIndex = currentIndex + 1;
+
+        lyricsRef.current?.scrollTo({
+          top:
+            (children[nextIndex] as HTMLDivElement).offsetTop -
+            lyricsRef.current!.clientHeight / 2,
+          behavior: 'smooth',
+        });
+
         syncDataRef.current![nextIndex][0] = audioRef.current!.currentTime;
         setCurrentIndex((v) => v + 1);
       }
@@ -142,6 +164,7 @@ const LyricsSyncPage: FC = () => {
             </div>
 
             <div
+              ref={lyricsRef}
               className="scrollbar mt-[24px] flex w-full grow flex-col gap-[8px] overflow-auto text-center outline-none"
               onKeyDown={handleLyricsBlockKeydown}
               tabIndex={-1}
@@ -176,12 +199,14 @@ const LyricsSyncPage: FC = () => {
           />
         </div>
 
-        <button
-          className="ml-auto flex items-center gap-[4px] rounded-[8px] bg-green-500 px-[16px] py-[8px] font-medium hover:bg-green-400"
-          onClick={handleSubmitLyrics}
-        >
-          <span>Submit</span>
-        </button>
+        {finished && (
+          <button
+            className="ml-auto flex items-center gap-[4px] rounded-[8px] bg-green-500 px-[16px] py-[8px] font-medium text-white hover:bg-green-400"
+            onClick={handleSubmitLyrics}
+          >
+            <span>Submit</span>
+          </button>
+        )}
       </div>
     </>
   );

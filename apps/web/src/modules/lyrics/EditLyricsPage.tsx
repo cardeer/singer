@@ -16,7 +16,12 @@ const EditLyricsPage: FC = () => {
   const [lyrics, setLyrics] = useState<string>(storeLyrics);
 
   const handleSyncClick = () => {
-    setStoreLyrics(lyrics);
+    setStoreLyrics(
+      lyrics
+        .split('\n')
+        .filter((line) => line !== '')
+        .join('\n'),
+    );
     navigate('/lyrics/sync');
   };
 

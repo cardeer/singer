@@ -1,7 +1,8 @@
-import { http } from '@/http';
+import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
 import { mdiMicrophone, mdiPencil } from '@mdi/js';
 import Icon from '@mdi/react';
+import { useMutation } from '@tanstack/react-query';
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,6 +11,10 @@ const SelectPage: FC = () => {
 
   const [link, setLink] = useState<string>('');
   const setSongDetails = useKaraokeStore((state) => state.setSongDetails);
+
+  const getSongDetailsMutation = useMutation({
+    mutationFn: apiService.details.getSongDetails.mutation,
+  });
 
   const handleLyricsClick = async () => {
     await getSongDetails();
@@ -23,13 +28,8 @@ const SelectPage: FC = () => {
 
   const getSongDetails = async () => {
     try {
-      const response = await http.get('/details', {
-        params: {
-          link,
-        },
-      });
-
-      setSongDetails(response.data);
+      const details = await getSongDetailsMutation.mutateAsync([link]);
+      setSongDetails(details);
     } catch (error: unknown) {
       console.log(error);
     }
