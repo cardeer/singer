@@ -10,6 +10,7 @@ import { useContainer, useExpressServer } from "routing-controllers";
 import Container from "typedi";
 import { LyricsRepository, LyricsRepositoryIdentifier } from "./data/repositories/LyricsRepository";
 import { AudioController } from "./modules/audio/AudioController";
+import { DetailsController } from "./modules/details/DetailsController";
 import { HealthController } from "./modules/health/HealthController";
 import { LyricsController } from "./modules/lyrics/LyricsController";
 
@@ -21,7 +22,7 @@ Container.set(LyricsRepositoryIdentifier, new LyricsRepository());
 useContainer(Container);
 
 useExpressServer(app, {
-  controllers: [AudioController, LyricsController, HealthController],
+  controllers: [AudioController, LyricsController, HealthController, DetailsController],
 });
 
 app.listen(3001, () => {

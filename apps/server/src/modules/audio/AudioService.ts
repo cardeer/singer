@@ -67,7 +67,9 @@ export class AudioService {
     const fullAudioFileName = getFullAudioFileName(id);
 
     try {
+      console.log(`Downloading audio from ${link}`);
       await downloadSoundFromLink(link, fullAudioFileName);
+      console.log(`Download success`);
     } catch {
       throw new DownloadAudioError(link);
     }
