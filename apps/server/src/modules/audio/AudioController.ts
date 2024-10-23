@@ -1,5 +1,5 @@
 import { INTERNAL_SERVER_ERROR_MESSAGE } from "@/constants/errors";
-import { sendFile } from "@/utils/controller";
+import { sendFile } from "@/utils/server";
 import { Response } from "express";
 import {
   Get,
@@ -29,6 +29,8 @@ export class AudioController {
 
       return res;
     } catch (error: unknown) {
+      console.log("[AudioController#getAudio]", error);
+
       if (error instanceof GetVideoInfoError) {
         throw new NotFoundError(error.message);
       }

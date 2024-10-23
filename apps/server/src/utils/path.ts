@@ -1,18 +1,14 @@
 import fs from "fs";
 import path from "path";
 
-export function getSoundsDir(): string {
-  const dir = path.resolve(process.cwd(), "sounds");
+export function getSoundIdDir(id: string): string {
+  const soundsDir = path.resolve(process.cwd(), "sounds");
 
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
+  if (!fs.existsSync(soundsDir)) {
+    fs.mkdirSync(soundsDir);
   }
 
-  return dir;
-}
-
-export function getSoundIdDir(id: string): string {
-  const dir = path.resolve(getSoundsDir(), id);
+  const dir = path.resolve(soundsDir, id);
 
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir);

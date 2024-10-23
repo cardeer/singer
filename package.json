@@ -2,7 +2,9 @@
   "name": "karaoke",
   "private": true,
   "scripts": {
-    "dev": "turbo dev"
+    "dev": "turbo dev",
+    "dev:server": "turbo dev --filter server",
+    "dev:web": " turbo dev --filter web"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
