@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import VolumeController from '@/components/VolumeController';
+import VolumeController from '@/components/VolumeController/VolumeController';
 import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
 import { mdiArrowLeft, mdiPause, mdiPlay } from '@mdi/js';
@@ -91,9 +91,10 @@ const KaraokePage: FC = () => {
       );
 
       audioRef.current!.src = objectUrl.current!;
-      audioRef.current!.volume = localStorage.getItem('volume')
-        ? parseInt(localStorage.getItem('volume')!) / 100
-        : 0.5;
+
+      const volume = localStorage.getItem('volume');
+      audioRef.current!.volume = volume ? parseFloat(volume!) : 0.5;
+
       audioRef.current!.play().catch(() => {});
       audioRef.current!.addEventListener('timeupdate', handleAudioTimeUpdate);
 
@@ -177,7 +178,7 @@ const KaraokePage: FC = () => {
 
               <div className="absolute bottom-[35px] right-[20px]">
                 <VolumeController
-                  onVolumeChange={(e) => (audioRef.current!.volume = e / 100)}
+                  onVolumeChange={(e) => (audioRef.current!.volume = e)}
                 />
               </div>
             </div>

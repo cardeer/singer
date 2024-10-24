@@ -1,3 +1,4 @@
+import VolumeController from '@/components/VolumeController/VolumeController';
 import { http } from '@/http';
 import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
@@ -46,7 +47,8 @@ const LyricsSyncPage: FC = () => {
     objectUrlRef.current = URL.createObjectURL(blob);
 
     audioRef.current!.src = objectUrlRef.current;
-    audioRef.current!.volume = 0.3;
+    const volume = localStorage.getItem('volume');
+    audioRef.current!.volume = volume ? parseFloat(volume!) : 0.5;
     audioRef.current!.play();
 
     setIsPlaying(true);
@@ -217,6 +219,12 @@ const LyricsSyncPage: FC = () => {
             <span>Submit</span>
           </button>
         )}
+
+        <div className="ml-auto">
+          <VolumeController
+            onVolumeChange={(e) => (audioRef.current!.volume = e)}
+          />
+        </div>
       </div>
     </>
   );
