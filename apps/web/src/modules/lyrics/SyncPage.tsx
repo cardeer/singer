@@ -76,6 +76,15 @@ const LyricsSyncPage: FC = () => {
     navigate('/');
   };
 
+  const handleLyricClick = (index: number) => {
+    if (!syncDataRef.current || !audioRef.current) return;
+
+    if (syncDataRef.current[index] && index < currentIndex) {
+      audioRef.current.currentTime = syncDataRef.current[index][0];
+      setCurrentIndex(index);
+    }
+  };
+
   useEffect(() => {
     if (audioRef.current && songDetails) {
       getAudio();
@@ -172,7 +181,8 @@ const LyricsSyncPage: FC = () => {
               {lyricsArray.map((lyric, i) => (
                 <div
                   key={i}
-                  className={`text-center transition-[font-size] duration-150 ${currentIndex === i ? 'text-3xl' : 'text-lg text-gray-400'}`}
+                  className={`mx-auto w-fit cursor-pointer text-center transition-[font-size] duration-150 ${currentIndex === i ? 'text-3xl' : 'text-lg text-gray-400'}`}
+                  onClick={() => handleLyricClick(i)}
                 >
                   {lyric !== '' ? (
                     lyric

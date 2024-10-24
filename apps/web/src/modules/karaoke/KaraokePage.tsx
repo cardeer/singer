@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import VolumeController from '@/components/VolumeController';
 import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
+import { mdiPause, mdiPlay } from '@mdi/js';
+import Icon from '@mdi/react';
 import { useQuery } from '@tanstack/react-query';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,12 +16,13 @@ const KaraokePage: FC = () => {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isReady, setIsReady] = useState<boolean>(false);
+  const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   const objectUrl = useRef<string>();
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const getLyricsQuery = useQuery({
-    queryKey: ['lyrics'],
+    queryKey: ['lyrics', songDetails?.id],
     queryFn: () => apiService.lyrics.getLyrics(songDetails!.id),
     retry: 0,
   });
@@ -32,6 +37,18 @@ const KaraokePage: FC = () => {
   const handleAudioTimeUpdate = () => {
     const currentTime = audioRef.current!.currentTime;
     setCurrentTime(currentTime);
+  };
+
+  const handleTogglePlayPause = () => {
+    if (!audioRef.current) return;
+
+    if (!isPlaying) {
+      setIsPlaying(true);
+      audioRef.current.play();
+    } else {
+      setIsPlaying(false);
+      audioRef.current.pause();
+    }
   };
 
   useEffect(() => {
@@ -72,10 +89,13 @@ const KaraokePage: FC = () => {
       );
 
       audioRef.current!.src = objectUrl.current!;
-      audioRef.current!.volume = 0.5;
+      audioRef.current!.volume = localStorage.getItem('volume')
+        ? parseInt(localStorage.getItem('volume')!) / 100
+        : 0.5;
       audioRef.current!.play();
       audioRef.current!.addEventListener('timeupdate', handleAudioTimeUpdate);
 
+      setIsPlaying(true);
       setIsReady(true);
     }
   }, [getInstrumentalAudio.isSuccess, getInstrumentalAudio.data]);
@@ -134,6 +154,23 @@ const KaraokePage: FC = () => {
               ) : (
                 <div className="text-3xl">No Lyrics Available</div>
               )}
+
+              <div
+                className="absolute bottom-[20px] flex h-[50px] w-[50px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-[3px] border-white"
+                onClick={handleTogglePlayPause}
+              >
+                <Icon
+                  path={isPlaying ? mdiPause : mdiPlay}
+                  size={1.5}
+                  color="white"
+                />
+              </div>
+
+              <div className="absolute bottom-[35px] right-[20px]">
+                <VolumeController
+                  onVolumeChange={(e) => (audioRef.current!.volume = e / 100)}
+                />
+              </div>
             </div>
           )}
         </div>

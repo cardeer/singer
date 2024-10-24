@@ -1,6 +1,8 @@
+import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
 import { mdiSync } from '@mdi/js';
 import Icon from '@mdi/react';
+import { useQuery } from '@tanstack/react-query';
 import { FC, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLyricsStore } from './stores/lyricsStore';
@@ -15,6 +17,11 @@ const EditLyricsPage: FC = () => {
 
   const [lyrics, setLyrics] = useState<string>(storeLyrics);
 
+  const lyricsQuery = useQuery({
+    queryKey: ['lyrics'],
+    queryFn: () => apiService.lyrics.getLyrics(songDetails!.id),
+  });
+
   const handleSyncClick = () => {
     setStoreLyrics(
       lyrics
@@ -24,6 +31,13 @@ const EditLyricsPage: FC = () => {
     );
     navigate('/lyrics/sync');
   };
+
+  useEffect(() => {
+    if (lyricsQuery.isSuccess && lyricsQuery.data) {
+      const lyricsArray = lyricsQuery.data.lyrics as [number, string][];
+      setLyrics(lyricsArray.map((v) => v[1]).join('\n'));
+    }
+  }, [lyricsQuery.isSuccess, lyricsQuery.data]);
 
   useEffect(() => {
     if (!songDetails) {
