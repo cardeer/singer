@@ -10,11 +10,20 @@ const LyricsSyncPage = lazy(() => import('@/modules/lyrics/SyncPage'));
 const App = () => {
   return (
     <Routes>
-      <Route index element={<LazyPage component={SelectPage} />} />
-      <Route path="/karaoke" element={<LazyPage component={KaraokePage} />} />
+      <Route index element={<LazyPage key="index" component={SelectPage} />} />
+      <Route
+        path="/karaoke"
+        element={<LazyPage key="karaoke" component={KaraokePage} />}
+      />
       <Route path="/lyrics">
-        <Route index element={<LazyPage component={LyricsPage} />} />
-        <Route path="sync" element={<LazyPage component={LyricsSyncPage} />} />
+        <Route
+          index
+          element={<LazyPage key="lyrics-index" component={LyricsPage} />}
+        />
+        <Route
+          path="sync"
+          element={<LazyPage key="lyrics-sync" component={LyricsSyncPage} />}
+        />
       </Route>
     </Routes>
   );

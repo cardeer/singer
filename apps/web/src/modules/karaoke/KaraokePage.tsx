@@ -2,7 +2,7 @@
 import VolumeController from '@/components/VolumeController';
 import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
-import { mdiPause, mdiPlay } from '@mdi/js';
+import { mdiArrowLeft, mdiPause, mdiPlay } from '@mdi/js';
 import Icon from '@mdi/react';
 import { useQuery } from '@tanstack/react-query';
 import { FC, useEffect, useRef, useState } from 'react';
@@ -28,13 +28,15 @@ const KaraokePage: FC = () => {
   });
 
   const getInstrumentalAudio = useQuery({
-    queryKey: ['instrumental'],
+    queryKey: ['instrumental', songDetails?.id],
     queryFn: () =>
       apiService.audio.getAudio({ id: songDetails!.id, type: 'instrumental' }),
     enabled: false,
   });
 
   const handleAudioTimeUpdate = () => {
+    if (!audioRef.current) return;
+
     const currentTime = audioRef.current!.currentTime;
     setCurrentTime(currentTime);
   };
@@ -92,7 +94,7 @@ const KaraokePage: FC = () => {
       audioRef.current!.volume = localStorage.getItem('volume')
         ? parseInt(localStorage.getItem('volume')!) / 100
         : 0.5;
-      audioRef.current!.play();
+      audioRef.current!.play().catch(() => {});
       audioRef.current!.addEventListener('timeupdate', handleAudioTimeUpdate);
 
       setIsPlaying(true);
@@ -113,6 +115,13 @@ const KaraokePage: FC = () => {
   return (
     <>
       <audio ref={audioRef} className="hidden" />
+
+      <div
+        className="fixed left-[20px] top-[20px] flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-md bg-white"
+        onClick={() => navigate('/')}
+      >
+        <Icon path={mdiArrowLeft} size={1.3} color="black" />
+      </div>
 
       {!isReady && (
         <div className="fixed left-0 top-0 z-20 flex h-full w-full flex-col items-center justify-center bg-black/80 text-center text-white">
