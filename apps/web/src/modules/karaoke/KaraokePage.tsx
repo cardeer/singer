@@ -118,7 +118,7 @@ const KaraokePage: FC = () => {
       <audio ref={audioRef} className="hidden" />
 
       <div
-        className="fixed left-[20px] top-[20px] flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-md bg-white"
+        className="fixed left-[16px] top-[16px] flex h-[40px] w-[40px] cursor-pointer items-center justify-center rounded-md bg-white"
         onClick={() => navigate('/')}
       >
         <Icon path={mdiArrowLeft} size={1.3} color="black" />
@@ -143,46 +143,58 @@ const KaraokePage: FC = () => {
             backgroundRepeat: 'no-repeat',
           }}
         >
-          {isReady && (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-[16px] bg-black/80">
-              {lyrics.length > 0 ? (
-                <>
-                  <div className="text-3xl">{lyrics[currentIndex][1]}</div>
-
-                  {currentIndex < lyrics.length - 1 && (
-                    <div className="text-lg text-gray-400">
-                      {lyrics[currentIndex + 1][1]}
-                    </div>
-                  )}
-
-                  {currentIndex < lyrics.length - 2 && (
-                    <div className="text-lg text-gray-400">
-                      {lyrics[currentIndex + 2][1]}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="text-3xl">No Lyrics Available</div>
-              )}
-
-              <div
-                className="absolute bottom-[20px] flex h-[50px] w-[50px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-[3px] border-white"
-                onClick={handleTogglePlayPause}
-              >
-                <Icon
-                  path={isPlaying ? mdiPause : mdiPlay}
-                  size={1.5}
-                  color="white"
-                />
+          <div className="flex h-full w-full flex-col items-center justify-center gap-[16px] bg-black/80">
+            <div className="absolute top-[16px] flex flex-col">
+              <div className="text-center text-xl font-bold">
+                {songDetails.title}
               </div>
 
-              <div className="absolute bottom-[35px] right-[20px]">
-                <VolumeController
-                  onVolumeChange={(e) => (audioRef.current!.volume = e)}
-                />
+              <div className="mt-[8px] text-center text-sm font-medium">
+                {songDetails.author.name}
               </div>
             </div>
-          )}
+
+            {isReady && (
+              <>
+                {lyrics.length > 0 ? (
+                  <>
+                    <div className="text-3xl">{lyrics[currentIndex][1]}</div>
+
+                    {currentIndex < lyrics.length - 1 && (
+                      <div className="text-lg text-gray-400">
+                        {lyrics[currentIndex + 1][1]}
+                      </div>
+                    )}
+
+                    {currentIndex < lyrics.length - 2 && (
+                      <div className="text-lg text-gray-400">
+                        {lyrics[currentIndex + 2][1]}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-3xl">No Lyrics Available</div>
+                )}
+
+                <div
+                  className="absolute bottom-[20px] flex h-[50px] w-[50px] cursor-pointer items-center justify-center overflow-hidden rounded-full border-[3px] border-white"
+                  onClick={handleTogglePlayPause}
+                >
+                  <Icon
+                    path={isPlaying ? mdiPause : mdiPlay}
+                    size={1.5}
+                    color="white"
+                  />
+                </div>
+
+                <div className="absolute bottom-[35px] right-[20px]">
+                  <VolumeController
+                    onVolumeChange={(e) => (audioRef.current!.volume = e)}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
     </>
