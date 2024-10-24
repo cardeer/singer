@@ -18,7 +18,7 @@ const EditLyricsPage: FC = () => {
   const [lyrics, setLyrics] = useState<string>(storeLyrics);
 
   const lyricsQuery = useQuery({
-    queryKey: ['lyrics'],
+    queryKey: ['lyrics', songDetails?.id],
     queryFn: () => apiService.lyrics.getLyrics(songDetails!.id),
   });
 

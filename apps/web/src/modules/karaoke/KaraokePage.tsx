@@ -187,7 +187,7 @@ const KaraokePage: FC = () => {
                   />
                 </div>
 
-                <div className="absolute bottom-[35px] right-[20px]">
+                <div className="absolute bottom-[20px] right-[20px]">
                   <VolumeController
                     onVolumeChange={(e) => (audioRef.current!.volume = e)}
                   />

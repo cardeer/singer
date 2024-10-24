@@ -2,19 +2,17 @@ import { create } from 'zustand';
 
 interface ILyricsStoreStates {
   lyrics: string;
-  syncedLyrics: [number, string][];
 }
 
 interface ILyricsStoreActions {
   setLyrics(lyrics: string): void;
-  setSyncedLyrics(data: ILyricsStoreStates['syncedLyrics']): void;
+  reset(): void;
 }
 
 export const useLyricsStore = create<ILyricsStoreStates & ILyricsStoreActions>(
   (set) => {
     return {
       lyrics: '',
-      syncedLyrics: [],
 
       setLyrics(lyrics) {
         set({
@@ -22,9 +20,9 @@ export const useLyricsStore = create<ILyricsStoreStates & ILyricsStoreActions>(
         });
       },
 
-      setSyncedLyrics(data) {
+      reset() {
         set({
-          syncedLyrics: data,
+          lyrics: '',
         });
       },
     };

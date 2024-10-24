@@ -15,7 +15,6 @@ const LyricsSyncPage: FC = () => {
   const songDetails = useKaraokeStore((state) => state.songDetails);
 
   const lyrics = useLyricsStore((state) => state.lyrics);
-  const setSyncedLyrics = useLyricsStore((state) => state.setSyncedLyrics);
 
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [finished, setFinished] = useState<boolean>(false);
@@ -141,7 +140,6 @@ const LyricsSyncPage: FC = () => {
 
     if (currentIndex === lyricsArray.length - 1) {
       setFinished(true);
-      setSyncedLyrics(syncDataRef.current!);
     }
 
     return () => {
@@ -211,20 +209,20 @@ const LyricsSyncPage: FC = () => {
           />
         </div>
 
-        {finished && (
-          <button
-            className="ml-auto flex items-center gap-[4px] rounded-[8px] bg-green-500 px-[16px] py-[8px] font-medium text-white hover:bg-green-400"
-            onClick={handleSubmitLyrics}
-          >
-            <span>Submit</span>
-          </button>
-        )}
-
         <div className="ml-auto">
           <VolumeController
             onVolumeChange={(e) => (audioRef.current!.volume = e)}
           />
         </div>
+
+        {finished && (
+          <button
+            className="ml-[24px] flex items-center gap-[4px] rounded-[8px] bg-green-500 px-[16px] py-[8px] font-medium text-white hover:bg-green-400"
+            onClick={handleSubmitLyrics}
+          >
+            <span>Submit</span>
+          </button>
+        )}
       </div>
     </>
   );
