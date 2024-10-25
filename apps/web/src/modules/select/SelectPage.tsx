@@ -5,12 +5,14 @@ import Icon from '@mdi/react';
 import { useMutation } from '@tanstack/react-query';
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useLyricsStore } from '../lyrics/stores/lyricsStore';
 
 const SelectPage: FC = () => {
   const navigate = useNavigate();
 
   const [link, setLink] = useState<string>('');
   const setSongDetails = useKaraokeStore((state) => state.setSongDetails);
+  const resetLyrics = useLyricsStore((state) => state.reset);
 
   const getSongDetailsMutation = useMutation({
     mutationFn: apiService.details.getSongDetails.mutation,
@@ -18,6 +20,7 @@ const SelectPage: FC = () => {
 
   const handleLyricsClick = async () => {
     await getSongDetails();
+    resetLyrics();
     navigate('/lyrics');
   };
 

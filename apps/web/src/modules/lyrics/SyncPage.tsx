@@ -1,10 +1,9 @@
 import VolumeController from '@/components/VolumeController/VolumeController';
-import { http } from '@/http';
 import { apiService } from '@/services';
 import { useKaraokeStore } from '@/stores/karaokeStore';
 import { mdiMusicNote, mdiPause, mdiPlay } from '@mdi/js';
 import Icon from '@mdi/react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLyricsStore } from './stores/lyricsStore';
@@ -29,29 +28,19 @@ const LyricsSyncPage: FC = () => {
     mutationFn: apiService.lyrics.updateLyrics.mutation,
   });
 
+  const getAudioQuery = useQuery({
+    queryKey: ['audio', songDetails?.id],
+    queryFn: () =>
+      apiService.audio.getAudio({
+        id: songDetails!.id,
+        type: 'full',
+      }),
+    retry: 0,
+  });
+
   const lyricsArray = useMemo(() => {
     return (lyrics ?? '').split(/\r?\n/) ?? [];
   }, [lyrics]);
-
-  const getAudio = async () => {
-    const response = await http.get('/audio', {
-      params: {
-        id: songDetails?.id,
-        type: 'full',
-      },
-      responseType: 'arraybuffer',
-    });
-
-    const blob = new Blob([response.data], { type: 'audio/mp3' });
-    objectUrlRef.current = URL.createObjectURL(blob);
-
-    audioRef.current!.src = objectUrlRef.current;
-    const volume = localStorage.getItem('volume');
-    audioRef.current!.volume = volume ? parseFloat(volume!) : 0.5;
-    audioRef.current!.play();
-
-    setIsPlaying(true);
-  };
 
   const togglePlay = () => {
     if (!isPlaying) {
@@ -87,18 +76,12 @@ const LyricsSyncPage: FC = () => {
   };
 
   useEffect(() => {
-    if (audioRef.current && songDetails) {
-      getAudio();
-    }
-  }, [audioRef]);
-
-  useEffect(() => {
-    if (lyricsArray.length > 0) {
-      syncDataRef.current = lyricsArray.map((lyric) => [0, lyric]);
-    }
-
     if (!songDetails || !lyrics) {
       navigate('/');
+    }
+
+    if (lyricsArray.length > 0) {
+      syncDataRef.current = lyricsArray.map((lyric) => [0, lyric]);
     }
 
     return () => {
@@ -112,6 +95,20 @@ const LyricsSyncPage: FC = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (getAudioQuery.isSuccess && getAudioQuery.data && audioRef.current) {
+      const blob = new Blob([getAudioQuery.data], { type: 'audio/mp3' });
+      objectUrlRef.current = URL.createObjectURL(blob);
+
+      audioRef.current!.src = objectUrlRef.current;
+      const volume = localStorage.getItem('volume');
+      audioRef.current!.volume = volume ? parseFloat(volume!) : 0.5;
+      audioRef.current!.play();
+
+      setIsPlaying(true);
+    }
+  }, [getAudioQuery.isSuccess, getAudioQuery.data, audioRef]);
 
   useEffect(() => {
     const handleSpacePressed = (e: KeyboardEvent) => {
